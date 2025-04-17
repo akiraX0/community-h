@@ -6,33 +6,41 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h2>Your Created Events</h2>
-    <table class="table table-bordered table-striped">
-        <thead>
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Location</th>
-            <th>Date</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="event : ${events}">
-            <td th:text="${event.title}"></td>
-            <td th:text="${event.description}"></td>
-            <td th:text="${event.location}"></td>
-            <td th:text="${#temporals.format(event.eventDate, 'yyyy-MM-dd HH:mm')}"></td>
-            <td>
-                <a th:href="@{'/events/' + ${event.id}}" class="btn btn-sm btn-info">View</a>
-                <a th:href="@{'/events/' + ${event.id} + '/edit'}" class="btn btn-sm btn-warning">Edit</a>
-                <form th:action="@{'/events/' + ${event.id} + '/delete'}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <button class="btn btn-success" onclick="goToAddEvent()">Add Event</button>
 </div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const jwt = /*[[${session.jwt}]]*/ '';
+    console.log("JWT Token:", jwt); // Log the JWT token to the console
+    /*]]>*/
+
+    function goToAddEvent() {
+        console.log("Sending request to /events/admin/dashboard with JWT:", jwt); // Log the request and JWT
+
+        fetch('/events/create', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + jwt
+            }
+        }).then(response => {
+            console.log("Response status:", response.status); // Log response status
+            if (response.redirected) {
+                console.log("Redirecting to:", response.url); // Log the redirect URL
+                window.location.href = response.url;
+            } else {
+                console.log("Received HTML content, updating page"); // Log if no redirect
+                response.text().then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                });
+            }
+        }).catch(err => {
+            console.error("Error:", err); // Log any errors
+            alert("Error: " + err);
+        });
+    }
+</script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 package com.project.community.entities;
 
+import com.project.community.dto.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,10 +30,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "role")
-    private List<String> roles = new ArrayList<>();
+
+    private UserRole role;
 
     @OneToMany(mappedBy = "volunteer")
     private List<Registration> registrations = new ArrayList<>();

@@ -35,14 +35,9 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(
                         request->request
                                 .requestMatchers("/auth/**", "/register", "/login").permitAll() // Permit access to index and other pages
-                                .requestMatchers("/events/").authenticated()
-                                .requestMatchers("/api/admin/**").authenticated()
-                                                .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

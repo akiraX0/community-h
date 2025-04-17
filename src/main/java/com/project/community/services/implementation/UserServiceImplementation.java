@@ -2,6 +2,7 @@ package com.project.community.services.implementation;
 
 import com.project.community.dto.UserRequest;
 import com.project.community.dto.UserResponse;
+import com.project.community.dto.UserRole;
 import com.project.community.entities.User;
 import com.project.community.exceptions.EmailAlreadyExistsException;
 import com.project.community.repository.UserRepository;
@@ -29,8 +30,9 @@ public class UserServiceImplementation implements UserService {
             throw new EmailAlreadyExistsException("User with this email already exists");
         }
         User newUser = User.builder()
+                .name(userRequest.getName())
                 .email(userRequest.getEmail())
-                .roles(Arrays.asList("VOLUNTEER"))
+                .role(UserRole.VOLUNTEER)
                 .password(passwordEncoder.encode(userRequest.getPassword()))
                 .build();
         userRepository.save(newUser);
@@ -45,7 +47,8 @@ public class UserServiceImplementation implements UserService {
         }
         User newUser = User.builder()
                 .email(userRequest.getEmail())
-                .roles(Arrays.asList("ORGANIZER"))
+                .name(userRequest.getName())
+                .role(UserRole.ORGANIZER)
                 .password(passwordEncoder.encode(userRequest.getPassword()))
                 .build();
         userRepository.save(newUser);

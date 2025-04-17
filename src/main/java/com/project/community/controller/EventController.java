@@ -28,10 +28,11 @@ public class EventController {
     private  EventService eventService;
 
     @GetMapping("/dashboard")
+    @PreAuthorize("hasAuthority('ORGANIZER')")
     public String showDashboard(Model model) {
         List<EventResponse> events = eventService.getAllEvents(); // your service method
         model.addAttribute("events", events);
-        return "redirect:/dashboard";
+        return "admin_dashboard";
     }
 
     @GetMapping("/create")
@@ -42,27 +43,34 @@ public class EventController {
     }
 
     @PreAuthorize("hasRole('ORGANIZER')")
-    @PostMapping
-    public String createEvent(@ModelAttribute @Valid EventsRequest eventsRequest, Model model) {
+    @PostMapping("/addEvent")
+    public String createEvent(@RequestBody @Valid EventsRequest eventsRequest, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         EventResponse created = eventService.createEvent(eventsRequest, user);
         model.addAttribute("event", created);
-        return "admin_dashboard"; // thymeleaf template name
+        return "dashboard"; // thymeleaf template name
     }
-
-    @PreAuthorize("hasRole('ORGANIZER')")
     @GetMapping("/admin/dashboard")
+    @PreAuthorize("hasRole('ORGANIZER')")
     public String showOrganizerDashboard(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Check if authentication exists
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login"; // If not authenticated, redirect to login
+        }
+
         User user = userRepository.findByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        // Continue with event fetching if user is valid
         List<EventResponse> events = eventService.getEventsByOrganizer(user);
         model.addAttribute("events", events);
-        return "admin_dashboard";
+
+        return "eventForm"; // Return the event form view
     }
 
     @GetMapping("/{id}")
@@ -72,8 +80,8 @@ public class EventController {
         return "eventDetail"; // thymeleaf template name
     }
 
-    @PreAuthorize("hasRole('ORGANIZER')")
     @PutMapping("/{id}/update")
+    @PreAuthorize("hasRole('ORGANIZER')")
     public String updateEvent(@PathVariable UUID id, @ModelAttribute EventsRequest updatedRequest, Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByEmail(authentication.getName())
@@ -83,8 +91,8 @@ public class EventController {
         return "eventUpdated"; // thymeleaf template name
     }
 
+    @DeleteMapping("/{id}/delete")
     @PreAuthorize("hasRole('ORGANIZER')")
-    @PostMapping("/{id}/delete")
     public String deleteEvent(@PathVariable UUID id, Model model) {
         eventService.deleteEvent(id);
         return "redirect:/events"; // refresh event list

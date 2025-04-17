@@ -6,11 +6,14 @@ import com.project.community.repository.UserRepository;
 import com.project.community.services.implementation.CustomUserDetails;
 import com.project.community.services.interfaces.UserService;
 import com.project.community.security.JwtUtil;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
@@ -76,41 +79,58 @@ public class PublicController {
 
     // Handle login
     @PostMapping("/login")
-    public String loginUser(@ModelAttribute("user") UserRequest user, Model model) {
+    public String loginUser(@ModelAttribute("user") UserRequest user, Model model, HttpSession session) {
         try {
-            // Authenticate the user with the provided credentials
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+            // 1. Authenticate the user
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
+            );
 
-            // Generate the JWT token
+            // 2. Set authentication to SecurityContext
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // 3. Load UserDetails and generate JWT
             UserDetails userDetails = customUserDetails.loadUserByUsername(user.getEmail());
             String jwt = jwtUtil.generateToken(userDetails.getUsername());
 
-            // Fetch the user from the repository
-            User loggedInUser = userRepository.findByEmail(userDetails.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-            // Add the JWT to the model
+            // Storing the token in session
+            session.setAttribute("jwt", jwt);
+
+            // Add the JWT token to the model to pass it to the frontend
             model.addAttribute("jwt", jwt);
             log.info("Token: {}", jwt);
 
-            // Check the user's role and return the appropriate view
-            if (loggedInUser.getRoles().get(0).equalsIgnoreCase("ORGANIZER")) {
-                log.info("role: {}",loggedInUser.getRoles().get(0));
-                model.addAttribute("message", "Login successful!");
-                return "admin_dashboard"; // View name for organizer
-            } else {
-                model.addAttribute("message", "Login successful!");
-                log.info("role: {}",loggedInUser.getRoles().get(0));
+            // 4. Fetch the full User object from the database
+            User loggedInUser = userRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-                return "dashboard"; // View for other users
+            // 5. Log granted authorities
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                log.info("Granted authorities: {}", auth.getAuthorities());
+            } else {
+                log.warn("Authentication object is null — JWT not yet applied in SecurityContext");
+            }
+
+            // 6. Check role and redirect accordingly
+            String role = loggedInUser.getRole().name();
+            log.info("Role: {}", role);
+            model.addAttribute("message", "Login successful!");
+
+            if ("ORGANIZER".equalsIgnoreCase(role)) {
+
+                return "admin_dashboard";
+            } else {
+                return "dashboard";
             }
 
         } catch (Exception e) {
             log.error("Login failed", e);
             model.addAttribute("error", "Invalid email or password");
-            return "login"; // Return to login page if login fails
+            return "login";
         }
     }
+
 
 }

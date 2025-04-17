@@ -20,10 +20,6 @@ public class Registration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    private Long volunteerId;
-//
-//    private UUID eventId;
-
     @ManyToOne
     @JoinColumn(name = "userId", insertable = false, updatable = false)
     private User volunteer;
