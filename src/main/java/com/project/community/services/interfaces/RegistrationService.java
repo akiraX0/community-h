@@ -1,6 +1,5 @@
 package com.project.community.services.interfaces;
 
-import com.project.community.dto.EventsRequest;
 import com.project.community.entities.Event;
 import com.project.community.entities.Registration;
 import com.project.community.entities.User;
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 public interface RegistrationService {
 
-    Registration registerUserForEvent(String userId, UUID eventID);
+    Registration registerUserForEvent(UUID eventId);
 
     Optional<Registration> getRegistration(Long id);
 
@@ -21,4 +20,5 @@ public interface RegistrationService {
 
     List<Registration> getRegistrationsByEvent(Event event);
 
+    List<Registration> getRegistrationsByEventId(UUID eventId);
 }

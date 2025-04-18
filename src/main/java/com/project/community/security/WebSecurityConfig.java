@@ -35,6 +35,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(
                         request->request
                                 .requestMatchers("/auth/**", "/register", "/login").permitAll() // Permit access to index and other pages
+                                .requestMatchers("/events/**").hasRole("ORGANIZER")
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())

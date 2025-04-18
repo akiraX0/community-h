@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EventService {
-    EventResponse createEvent(EventsRequest request, User user);
+    EventResponse createEvent(EventsRequest request, String email);
     List<EventResponse> getAllEvents();
     EventResponse getEventById(UUID id);
-    EventResponse updateEvent(UUID id, EventsRequest request, User user);
-    void deleteEvent(UUID id);
-    List<EventResponse> getEventsByOrganizer(User organizer);
+    EventResponse updateEvent(UUID id, EventsRequest request, String email);
+    void deleteEvent(UUID id,String email);
+    List<EventResponse> getEventsByOrganizer(String organizer);
 }

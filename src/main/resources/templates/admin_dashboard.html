@@ -13,6 +13,12 @@
     /*<![CDATA[*/
     const jwt = /*[[${session.jwt}]]*/ '';
     console.log("JWT Token:", jwt); // Log the JWT token to the console
+    // Store JWT in localStorage
+    if (jwt && jwt !== '') {
+        localStorage.setItem('jwt', jwt);
+        console.log("JWT stored in localStorage.");
+    }
+
     /*]]>*/
 
     function goToAddEvent() {

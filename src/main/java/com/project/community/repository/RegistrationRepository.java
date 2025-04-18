@@ -14,6 +14,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
 
     // Check if a registration exists for a specific user and event
     Optional<Registration> findByVolunteerAndEvent(User volunteer, Event event);
+    Optional<Registration> findByVolunteerIdAndEventId(User volunteer, Event event);
+
 
     // Find all registrations for a specific user
     List<Registration> findByVolunteer(User volunteer);

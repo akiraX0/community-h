@@ -9,5 +9,6 @@ import java.util.UUID;
 public interface EventRepository extends JpaRepository<Event, UUID> {
 
     List<Event> findByOrganizerId(Long organizerId);
+    List<Event> findByOrganizerEmail(String email);
 
 }

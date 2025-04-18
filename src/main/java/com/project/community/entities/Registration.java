@@ -28,7 +28,7 @@ public class Registration {
     @JoinColumn(name = "eventId", insertable = false, updatable = false)
     private Event event;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime registrationDate;
     private LocalDateTime updatedAt;
 
 }

@@ -43,7 +43,7 @@ public class PublicController {
     // Show registration form for users
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        model.addAttribute("user", new UserRequest());
+        model.addAttribute("user", new UserRequest()); // Create an empty UserRequest object
         return "register"; // corresponds to register.html
     }
 

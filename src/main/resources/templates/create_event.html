@@ -2,87 +2,74 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Create Event</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <meta name="jwt-token" th:content="${jwt}" />
 </head>
 <body>
-<div class="container mt-5">
-    <h2>Create a New Event</h2>
 
-    <form id="eventForm">
-        <div class="mb-3">
-            <label for="title" class="form-label">Event Title</label>
-            <input type="text" id="title" class="form-control" required />
-        </div>
+<h2>Create Event</h2>
 
-        <div class="mb-3">
-            <label for="description" class="form-label">Event Description</label>
-            <textarea id="description" class="form-control" rows="3" required></textarea>
-        </div>
+<div id="message" style="color: green;"></div>
+<div id="error" style="color: red;"></div>
 
-        <div class="mb-3">
-            <label for="location" class="form-label">Event Location</label>
-            <input type="text" id="location" class="form-control" required />
-        </div>
+<form id="createEventForm">
+    <input type="text" id="title" name="title" placeholder="Title" required>
+    <textarea id="description" name="description" placeholder="Description" required></textarea>
+    <input type="text" id="location" name="location" placeholder="Location" required>
+    <input type="datetime-local" id="eventDate" name="eventDate" required>
+    <button type="submit">Submit</button>
+</form>
 
-        <div class="mb-3">
-            <label for="eventDate" class="form-label">Event Date & Time</label>
-            <input type="datetime-local" id="eventDate" class="form-control" required />
-        </div>
-
-        <button type="submit" class="btn btn-primary">Create Event</button>
-    </form>
-</div>
 
 <script>
-    document.getElementById("eventForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('createEventForm');
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        const jwt = document.querySelector("meta[name='jwt-token']").getAttribute("content");
-        console.log("JWT Token:", jwt);
+            // Grab your inputs
+            const title       = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const location    = document.getElementById('location').value;
+            const eventDate   = document.getElementById('eventDate').value;
+            // If you have an endTime input, uncomment the next line and make sure there is an
+            // <input id="endTime" …> in your HTML.
+            // const endTime = document.getElementById('endTime').value;
 
-        const requestBody = {
-            title: document.getElementById("title").value,
-            description: document.getElementById("description").value,
-            location: document.getElementById("location").value,
-            eventDate: document.getElementById("eventDate").value
-        };
+            // Debug logs
+            console.log("Title:", title);
+            console.log("Description:", description);
+            console.log("Location:", location);
+            console.log("eventDate:", eventDate);
+            // console.log("End:", endTime);  // don’t log this if it’s undefined
 
-        console.log("Request Body:", requestBody);
+            // Build payload
+            const eventData = { title, description, location, eventDate /*, endTime */ };
 
-        try {
-            const response = await fetch("/events/addEvent", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + jwt
-                },
-                body: JSON.stringify(requestBody)
-            });
+            const token = localStorage.getItem('jwt');
 
-            console.log("Response Status:", response.status);
+            try {
+                const response = await fetch('/events/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(eventData)
+                });
 
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                const data = await response.json();
                 if (response.ok) {
-                    console.log("Success Response:", data);
-                    alert("Event created successfully!");
-                    window.location.href = "/dashboard";
+                    document.getElementById('message').innerText = "Event created successfully!";
+                    document.getElementById('error').innerText = "";
+                    form.reset();
                 } else {
-                    console.log("Error Response:", data);
-                    alert("Error: " + (data.message || "Something went wrong"));
+                    const errorMsg = await response.text();
+                    document.getElementById('error').innerText = "Failed: " + errorMsg;
                 }
-            } else {
-                const text = await response.text();
-                console.warn("Non-JSON Response:", text);
-                alert("Server returned unexpected response format.");
+            } catch (err) {
+                document.getElementById('error').innerText = "Error: " + err;
             }
-        } catch (error) {
-            console.error("Fetch Error:", error);
-            alert("Network error: " + error);
-        }
+        });
     });
 </script>
+
 </body>
 </html>
