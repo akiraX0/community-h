@@ -1,9 +1,11 @@
 package com.project.community.controller;
 
+import com.project.community.dto.EventResponse;
 import com.project.community.dto.UserRequest;
 import com.project.community.entities.User;
 import com.project.community.repository.UserRepository;
 import com.project.community.services.implementation.CustomUserDetails;
+import com.project.community.services.interfaces.EventService;
 import com.project.community.services.interfaces.UserService;
 import com.project.community.security.JwtUtil;
 import jakarta.servlet.http.HttpSession;
@@ -19,6 +21,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/auth")
@@ -39,6 +43,8 @@ public class PublicController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EventService eventService;
 
     // Show registration form for users
     @GetMapping("/register")
@@ -118,11 +124,13 @@ public class PublicController {
             log.info("Role: {}", role);
             model.addAttribute("message", "Login successful!");
 
+            List<EventResponse> events = eventService.getAllEvents(); // Fetch events from your service
+            model.addAttribute("events", events); // Add the events to the model
             if ("ORGANIZER".equalsIgnoreCase(role)) {
 
                 return "admin_dashboard";
             } else {
-                return "dashboard";
+                return "event_list";
             }
 
         } catch (Exception e) {

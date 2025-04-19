@@ -31,23 +31,11 @@ public class EventController {
     private  AuthenticationUtils authUtils;
     @Autowired
     private RegistrationService registrationService;
-    @GetMapping
-    public String listAllEvents(Model model) {
-        List<EventResponse> events = eventService.getAllEvents();
-        model.addAttribute("events", events);
-        return "event_list";
-    }
 
-//    @GetMapping("/dashboard")
-//    @PreAuthorize("hasAuthority('ORGANIZER')")
-//    public String showAdminDashboard(Model model) {
-//        List<EventResponse> events = eventService.getAllEvents();
-//        model.addAttribute("events", events);
-//        return "admin_dashboard";
-//    }
+
+
 
     @GetMapping("/organizer/dashboard")
-//    @PreAuthorize("hasAuthority('ORGANIZER')")
     public String showOrganizerDashboard(Model model) {
         String userEmail = authUtils.getCurrentUserEmail();
         List<EventResponse> events = eventService.getEventsByOrganizer(userEmail);
@@ -56,14 +44,12 @@ public class EventController {
     }
 
     @GetMapping("/create")
-//    @PreAuthorize("hasRole('ORGANIZER')")
     public String showCreateEventForm(Model model) {
         model.addAttribute("eventsRequest", new EventsRequest());
         return "create_event";
     }
 
     @PostMapping("/create")
-//    @PreAuthorize("hasRole('ORGANIZER')")
     public String createEvent(@RequestBody @Valid EventsRequest eventsRequest,
                               BindingResult bindingResult,
                               RedirectAttributes redirectAttributes) {
@@ -90,7 +76,6 @@ public class EventController {
     }
 
     @GetMapping("/{id}/edit")
-//    @PreAuthorize("hasAuthority('ORGANIZER')")
     public String showEditEventForm(@PathVariable UUID id, Model model) {
         EventResponse event = eventService.getEventById(id);
 
@@ -108,7 +93,6 @@ public class EventController {
     }
 
     @PostMapping("/{id}/edit")
-//    @PreAuthorize("hasAuthority('ORGANIZER')")
     public String updateEvent(@PathVariable UUID id,
                               @ModelAttribute @Valid EventsRequest eventsRequest,
                               BindingResult bindingResult,
@@ -129,7 +113,6 @@ public class EventController {
     }
 
     @PostMapping("/{id}/delete")
-//    @PreAuthorize("hasAuthority('ORGANIZER')")
     public String deleteEvent(@PathVariable UUID id, RedirectAttributes redirectAttributes) {
         try {
             eventService.deleteEvent(id, authUtils.getCurrentUserEmail());
@@ -141,7 +124,6 @@ public class EventController {
     }
 
     @GetMapping("/{eventId}/registrations")
-//    @PreAuthorize("hasAuthority('ORGANIZER')") // Ensure only organizers can access this
     public String getEventRegistrations(@PathVariable UUID eventId, Model model, RedirectAttributes redirectAttributes) {
         EventResponse eventResponse = eventService.getEventById(eventId);
 

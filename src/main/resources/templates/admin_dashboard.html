@@ -7,6 +7,9 @@
 <body>
 <div class="container mt-5">
     <button class="btn btn-success" onclick="goToAddEvent()">Add Event</button>
+    <button class="btn btn-primary mb-3" onclick="getEvents()">Get Events</button>
+    <div id="eventsContainer" class="row mt-4"></div>
+
 </div>
 
 <script th:inline="javascript">
@@ -47,6 +50,38 @@
             alert("Error: " + err);
         });
     }
+    function getEvents() {
+        const token = localStorage.getItem("jwt");
+
+        fetch('/api/getEvents', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch events");
+                }
+                return response.text(); // expecting full HTML page
+            })
+            .then(html => {
+                // Extract only the inner content of the <body> tag to inject
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+
+                // get .row content from the event_list page and inject into #eventsContainer
+                const eventListRow = temp.querySelector('.row');
+                const container = document.getElementById('eventsContainer');
+                container.innerHTML = '';
+                if (eventListRow) {
+                    container.appendChild(eventListRow);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading events:', error);
+                alert("Error loading events: " + error.message);
+            });}
 </script>
 </body>
 </html>
